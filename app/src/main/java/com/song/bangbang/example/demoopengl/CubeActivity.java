@@ -18,6 +18,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLUtils;
 import android.os.Bundle;
@@ -102,11 +103,12 @@ public class CubeActivity extends Activity {
 				float dy = y - mPreviousY;
 				mRenderer.mAngleX += dx * TOUCH_SCALE_FACTOR;
 				mRenderer.mAngleY += dy * TOUCH_SCALE_FACTOR;
-				
-				View p = (View)getParent();
-				p = (View)p.getParent();
-				((TextView)(p.findViewById(R.id.textView))).setText("mAngleX: " + mRenderer.mAngleX 
-						+ "\nmAngleY: " + mRenderer.mAngleY);
+
+				View p = (View) getParent();
+				p = (View) p.getParent();
+				((TextView) (p.findViewById(R.id.textView)))
+						.setText("mAngleX: " + mRenderer.mAngleX
+								+ "\nmAngleY: " + mRenderer.mAngleY);
 				requestRender();
 			}
 			mPreviousX = x;
@@ -130,7 +132,7 @@ public class CubeActivity extends Activity {
 			public void onSurfaceCreated(GL10 gl, EGLConfig config) {
 
 				gl.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-				
+
 				gl.glEnable(GL10.GL_DEPTH_TEST);
 
 				gl.glEnable(GL10.GL_TEXTURE_2D);
@@ -165,7 +167,7 @@ public class CubeActivity extends Activity {
 				gl.glMatrixMode(GL10.GL_PROJECTION); // set matrix to projection
 														// mode
 				gl.glLoadIdentity(); // reset the matrix to its default state
-//				 gl.glFrustumf(-ratio, ratio, -1, 1, 3, 7); // apply the
+				// gl.glFrustumf(-ratio, ratio, -1, 1, 3, 7); // apply the
 				// projection matrix
 			}
 
@@ -179,8 +181,8 @@ public class CubeActivity extends Activity {
 
 				// XXX bysong why we need this ???
 				// When using GL_MODELVIEW, you must set the view point
-//				 GLU.gluLookAt(gl, 0, 0, -3, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
-				
+				// GLU.gluLookAt(gl, 0, 0, -3, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
+
 				gl.glRotatef(mAngleX, 0, 1, 0);
 				gl.glRotatef(mAngleY, 1, 0, 0);
 
@@ -239,7 +241,7 @@ public class CubeActivity extends Activity {
 					// left bottom
 					0, 0, 1,
 					// right bottom
-					1, 0, 1, 
+					1, 0, 1,
 					// right top
 					1, 1, 1, };
 			// ccw
@@ -281,7 +283,7 @@ public class CubeActivity extends Activity {
 				mCbb = bb.asFloatBuffer();
 				mCbb.put(VERTEX);
 				mCbb.position(0);
-				
+
 				bb = ByteBuffer.allocateDirect(TEX.length * BYTE_PER_FLOAT);
 				bb.order(ByteOrder.nativeOrder());
 
@@ -300,8 +302,8 @@ public class CubeActivity extends Activity {
 				gl.glShadeModel(GL10.GL_FLAT);
 				gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
 				gl.glVertexPointer(COORD_PER_VERTEX, GL10.GL_FLOAT, 0, mVbb);
-				
-//				gl.glCullFace(mode)
+
+				// gl.glCullFace(mode)
 
 				gl.glEnableClientState(GL10.GL_COLOR_ARRAY);
 				gl.glColorPointer(COORD_PER_VERTEX, GL10.GL_FLOAT, 0, mCbb);
@@ -382,7 +384,7 @@ public class CubeActivity extends Activity {
 				}
 				// bitmap =
 				// ((BitmapDrawable)mContext.getResources().getDrawable(R.drawable.ic_launcher)).getBitmap();
-				// bitmap = getBitmap(which);
+//				bitmap = getBitmap(which);
 
 				GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, bitmap, 0);
 				bitmap.recycle();
@@ -393,13 +395,20 @@ public class CubeActivity extends Activity {
 				Bitmap b = Bitmap.createBitmap(128, 128, config);
 				// b.eraseColor(0);
 				Canvas c = new Canvas(b);
-				Paint paint = new TextPaint();
-				paint.setColor(Color.BLACK);
-				paint.setTextSize(30);
-				paint.setAntiAlias(true);
-				paint.setARGB(0xff, 0x00, 0x00, 0x00);
-				c.drawColor(Color.WHITE);
-				c.drawText(which + " ", 0, 0, paint);
+				Paint p = new TextPaint();
+				p.setColor(Color.RED);
+				p.setTextSize(30);
+				p.setAntiAlias(true);
+				String familyName = "Times New Roman";
+				Typeface font = Typeface.create(familyName, Typeface.NORMAL);
+
+				p.setColor(Color.WHITE);
+
+				p.setTypeface(font);
+				c.drawColor(Color.TRANSPARENT);
+				// c.drawColor(Color.WHITE);
+
+				c.drawText(which + " ", 0, 0, p);
 
 				return b;
 			}
