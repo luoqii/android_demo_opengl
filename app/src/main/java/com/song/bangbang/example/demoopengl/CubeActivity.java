@@ -19,14 +19,15 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.opengl.GLSurfaceView;
-import android.opengl.GLU;
 import android.opengl.GLUtils;
 import android.os.Bundle;
 import android.text.TextPaint;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.song.bangbang.example.demoopengl.CubeActivity.MyGlSurfaceView.MyRender;
 
@@ -63,7 +64,7 @@ public class CubeActivity extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 
-	public static class MyGlSurfaceView extends GLSurfaceView {
+	static class MyGlSurfaceView extends GLSurfaceView {
 
 		private final float TOUCH_SCALE_FACTOR = 180.0f / 320;
 		private final float TRACKBALL_SCALE_FACTOR = 36.0f;
@@ -101,6 +102,11 @@ public class CubeActivity extends Activity {
 				float dy = y - mPreviousY;
 				mRenderer.mAngleX += dx * TOUCH_SCALE_FACTOR;
 				mRenderer.mAngleY += dy * TOUCH_SCALE_FACTOR;
+				
+				View p = (View)getParent();
+				p = (View)p.getParent();
+				((TextView)(p.findViewById(R.id.textView))).setText("mAngleX: " + mRenderer.mAngleX 
+						+ "\nmAngleY: " + mRenderer.mAngleY);
 				requestRender();
 			}
 			mPreviousX = x;
@@ -190,9 +196,9 @@ public class CubeActivity extends Activity {
 			public static final int PLANE_TOP = 5;
 			public static final int PLANE_BOTTOM = 6;
 
-			public static final float ZERO = 0.f;
-			public static final float ONE = 1f;
-			public static final float W = 2f;
+			public static final float ZERO = 0.2f;
+			public static final float ONE = 0.8f;
+			public static final float W = 1f;
 			public static final int BYTE_PER_FLOAT = 4;
 			public static final int BYTE_PER_SHORT = 2;
 
@@ -247,7 +253,7 @@ public class CubeActivity extends Activity {
 					// right plane
 					7, 6, 2, 7, 2, 3,
 					// top plane
-					0, 4, 7, 0, 7, 4,
+					0, 4, 7, 0, 7, 3,
 					// bottom plane
 					5, 1, 2, 5, 2, 6, };
 
@@ -291,9 +297,11 @@ public class CubeActivity extends Activity {
 			}
 
 			public void draw(GL10 gl) {
-				gl.glShadeModel(GL10.GL_SMOOTH);
+				gl.glShadeModel(GL10.GL_FLAT);
 				gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
 				gl.glVertexPointer(COORD_PER_VERTEX, GL10.GL_FLOAT, 0, mVbb);
+				
+//				gl.glCullFace(mode)
 
 				gl.glEnableClientState(GL10.GL_COLOR_ARRAY);
 				gl.glColorPointer(COORD_PER_VERTEX, GL10.GL_FLOAT, 0, mCbb);
