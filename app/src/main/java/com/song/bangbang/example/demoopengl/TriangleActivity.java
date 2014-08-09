@@ -17,7 +17,7 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 
-public class MyActivity extends Activity {
+public class TriangleActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,7 +30,6 @@ public class MyActivity extends Activity {
         ((ViewGroup) findViewById(R.id.container)).addView(glSurfaceView);
 
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -58,7 +57,7 @@ public class MyActivity extends Activity {
         public MyRender() {
 
             mTriangle = new Triangle();
-            mTriangle = new SmoothTriangle(false);
+            mTriangle = new SmoothTriangle(true);
         }
 
         @Override
@@ -155,7 +154,7 @@ public class MyActivity extends Activity {
 
             mSmoooth = smooth;
 
-            ByteBuffer vbb = ByteBuffer.allocateDirect(SMOOTH_COLOR.length * COLOR_PER_VERTEX * BYTE_PER_FLOAT);
+            ByteBuffer vbb = ByteBuffer.allocateDirect(SMOOTH_COLOR.length * BYTE_PER_FLOAT);
             vbb.order(ByteOrder.nativeOrder());
             mColorBuffer = vbb.asFloatBuffer();
             mColorBuffer.put(SMOOTH_COLOR);
