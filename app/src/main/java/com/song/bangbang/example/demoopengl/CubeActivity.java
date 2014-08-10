@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -126,6 +127,7 @@ public class CubeActivity extends Activity {
 			public MyRender(Context context) {
 
 				mModel = new Cube(context);
+				mModel = new TextCure(context);
 			}
 
 			@Override
@@ -155,6 +157,8 @@ public class CubeActivity extends Activity {
 				// // env
 				// gl.glTexEnvf(GL10.GL_TEXTURE_ENV, GL10.GL_TEXTURE_ENV_MODE,
 				// GL10.GL_REPLACE);
+
+				mModel.onSurfaceCreated(gl, config);
 			}
 
 			@Override
@@ -169,6 +173,8 @@ public class CubeActivity extends Activity {
 				gl.glLoadIdentity(); // reset the matrix to its default state
 				// gl.glFrustumf(-ratio, ratio, -1, 1, 3, 7); // apply the
 				// projection matrix
+
+				mModel.onSurfaceChanged(gl, width, height);
 			}
 
 			@Override
@@ -186,17 +192,18 @@ public class CubeActivity extends Activity {
 				gl.glRotatef(mAngleX, 0, 1, 0);
 				gl.glRotatef(mAngleY, 1, 0, 0);
 
-				mModel.draw(gl);
+				mModel.onDrawFrame(gl);
 			}
 		}
 
 		public static class Cube {
-			public static final int PLANE_BACK = 1;
-			public static final int PLANE_FRONT = 2;
-			public static final int PLANE_LEFT = 3;
-			public static final int PLANE_RIGHT = 4;
-			public static final int PLANE_TOP = 5;
-			public static final int PLANE_BOTTOM = 6;
+			public static final int PLANE_BACK = 0;
+			public static final int PLANE_FRONT = 1;
+			public static final int PLANE_LEFT = 2;
+			public static final int PLANE_RIGHT = 3;
+			public static final int PLANE_TOP = 4;
+			public static final int PLANE_BOTTOM = 5;
+			public static final int PLANE_COUNT = 6;
 
 			public static final float ZERO = 0.2f;
 			public static final float ONE = 0.8f;
@@ -227,23 +234,13 @@ public class CubeActivity extends Activity {
 			public static final int TEX_PER_VERTEX = 3;
 			public static final float[] TEX = new float[] {
 					// back plane
-					// left top
-					0, 1, 0,
-					// left bottom
-					0, 0, 0,
-					// right bottom
-					1, 0, 0,
-					// right top
-					1, 1, 0,
+					0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0,
 					// front plane
-					// left top
-					0, 1, 1,
-					// left bottom
-					0, 0, 1,
-					// right bottom
-					1, 0, 1,
-					// right top
-					1, 1, 1, };
+					0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1,
+					// back plane
+					0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0,
+					// front plane
+					0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, };
 			// ccw
 			public static final short[] INDEX = new short[] {
 					// back plane
@@ -298,12 +295,23 @@ public class CubeActivity extends Activity {
 				mIbb.position(0);
 			}
 
-			public void draw(GL10 gl) {
+			public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+				// TODO Auto-generated method stub
+
+			}
+
+			public void onSurfaceChanged(GL10 gl, int width, int height) {
+				// TODO Auto-generated method stub
+
+			}
+
+			public void onDrawFrame(GL10 gl) {
 				gl.glShadeModel(GL10.GL_FLAT);
 				gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
 				gl.glVertexPointer(COORD_PER_VERTEX, GL10.GL_FLOAT, 0, mVbb);
 
-				// gl.glCullFace(mode)
+				gl.glEnable(GL10.GL_CULL_FACE);
+				gl.glCullFace(GL10.GL_BACK);
 
 				gl.glEnableClientState(GL10.GL_COLOR_ARRAY);
 				gl.glColorPointer(COORD_PER_VERTEX, GL10.GL_FLOAT, 0, mCbb);
@@ -319,39 +327,39 @@ public class CubeActivity extends Activity {
 
 				{
 					// back plane
-					bintTexture(PLANE_BACK);
+					bindTexture(PLANE_BACK);
 					mIbb.position(0);
 					gl.glDrawElements(GL10.GL_TRIANGLES, 6,
 							GL10.GL_UNSIGNED_SHORT, mIbb);
 					// front plane
-					bintTexture(PLANE_FRONT);
+					bindTexture(PLANE_FRONT);
 					mIbb.position(6);
 					gl.glDrawElements(GL10.GL_TRIANGLES, 6,
 							GL10.GL_UNSIGNED_SHORT, mIbb);
 					// left plane
-					bintTexture(PLANE_LEFT);
+					bindTexture(PLANE_LEFT);
 					mIbb.position(12);
 					gl.glDrawElements(GL10.GL_TRIANGLES, 6,
 							GL10.GL_UNSIGNED_SHORT, mIbb);
 					// right plane
-					bintTexture(PLANE_RIGHT);
+					bindTexture(PLANE_RIGHT);
 					mIbb.position(18);
 					gl.glDrawElements(GL10.GL_TRIANGLES, 6,
 							GL10.GL_UNSIGNED_SHORT, mIbb);
 					// top plane
-					bintTexture(PLANE_TOP);
+					bindTexture(PLANE_TOP);
 					mIbb.position(24);
 					gl.glDrawElements(GL10.GL_TRIANGLES, 6,
 							GL10.GL_UNSIGNED_SHORT, mIbb);
 					// botttom plane
-					bintTexture(PLANE_BOTTOM);
+					bindTexture(PLANE_BOTTOM);
 					mIbb.position(30);
 					gl.glDrawElements(GL10.GL_TRIANGLES, 6,
 							GL10.GL_UNSIGNED_SHORT, mIbb);
 				}
 			}
 
-			private void bintTexture(int which) {
+			public void bindTexture(int which) {
 				int res = R.raw.robot;
 				if (PLANE_BACK == which) {
 					res = R.raw.robot_back;
@@ -384,7 +392,8 @@ public class CubeActivity extends Activity {
 				}
 				// bitmap =
 				// ((BitmapDrawable)mContext.getResources().getDrawable(R.drawable.ic_launcher)).getBitmap();
-//				bitmap = getBitmap(which);
+				// Bitmap b = getBitmap(which);
+				// bitmap = b;
 
 				GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, bitmap, 0);
 				bitmap.recycle();
@@ -411,6 +420,297 @@ public class CubeActivity extends Activity {
 				c.drawText(which + " ", 0, 0, p);
 
 				return b;
+			}
+		}
+
+		public static class TextCure extends Cube {
+			public static final int TEXUT_UNIT_COUNT = PLANE_COUNT;
+
+			public static final float[] VERTEX = new float[] {
+					// front
+					ZERO, ONE, ONE, W,
+					ZERO, ZERO, ONE, W, 
+					ONE, ZERO, ONE, W,
+					ONE, ONE, ONE, W,
+					// back
+					ZERO, ONE, ZERO, W, 
+					ZERO, ZERO, ZERO, W, 
+					ONE, ZERO, ZERO,	W, 
+					ONE, ONE, ZERO, W,
+					// left
+					ZERO, ONE, ZERO, W, 
+					ZERO, ZERO, ZERO, W, 
+					ZERO, ZERO, ONE, W, 
+					ZERO, ONE, ONE, W, 
+                 // right
+					ONE, ONE, ZERO, W, 
+					ONE, ZERO, ZERO, W, 
+					ONE, ZERO, ONE, W, 
+					ONE, ONE, ONE, W, 
+					// top
+					ZERO, ONE, ZERO, W,
+					ZERO, ONE, ONE, W,
+					ONE, ONE, ONE, W,
+					ONE, ONE, ZERO, W,
+					// bottom
+					ZERO, ZERO, ZERO, W,
+					ZERO, ZERO, ONE, W,
+					ONE, ZERO, ONE, W,
+					ONE, ZERO, ZERO, W,
+			};
+
+			public static final float[] TEX = new float[] {
+					// front
+					ZERO, ONE, ZERO, ZERO, ONE, ZERO, ONE, ONE,
+					// back
+					ZERO, ONE, ZERO, ZERO, ONE, ZERO, ONE, ONE,
+					// left
+					ZERO, ONE, ZERO, ZERO, ONE, ZERO, ONE, ONE,
+					// right
+					ZERO, ONE, ZERO, ZERO, ONE, ZERO, ONE, ONE,
+					// top
+					ZERO, ONE, ZERO, ZERO, ONE, ZERO, ONE, ONE,
+					// bottom
+					ZERO, ONE, ZERO, ZERO, ONE, ZERO, ONE, ONE, };
+			public static final byte[] INDEX_FRONT = new byte[] {
+					// front
+					0, 1, 3, 2,
+					// back
+					0, 0, 0, 0,
+					// left
+					0, 0, 0, 0,
+					// right
+					0, 0, 0, 0,
+					// top
+					0, 0, 0, 0,
+					// bottom
+					0, 0, 0, 0, };
+
+			public static final byte[] INDEX_BACK = new byte[] {
+					// front
+					0, 0, 0, 0,
+					// back
+					4, 5, 7, 6,
+					// left
+					0, 0, 0, 0,
+					// right
+					0, 0, 0, 0,
+					// top
+					0, 0, 0, 0,
+					// bottom
+					0, 0, 0, 0, };
+
+			public static final byte[] INDEX_LEFT = new byte[] {
+					// front
+					0, 0, 0, 0,
+					// back
+					0, 0, 0, 0,
+					// left
+					8, 9, 11, 10, 
+					// left
+					0, 0, 0, 0,
+					// top
+					0, 0, 0, 0,
+					// bottom
+					0, 0, 0, 0,};
+			public static final byte[] INDEX_RIGHT = new byte[] {
+				// front
+				0, 0, 0, 0,
+				// back
+				0, 0, 0, 0,
+				// left
+				0, 0, 0, 0,
+				// left
+				12, 13, 15, 14,
+				// top
+				0, 0, 0, 0,
+				// bottom
+				0, 0, 0, 0,};
+
+			public static final byte[] INDEX_TOP = new byte[] {
+				// front
+				0, 0, 0, 0,
+				// back
+				0, 0, 0, 0,
+				// left
+				0, 0, 0, 0,
+				// left
+				0, 0, 0, 0,
+				// top
+				16, 17, 19, 18,
+				// bottom
+				0, 0, 0, 0,};
+			public static final byte[] INDEX_BOTTOM = new byte[] {
+				// front
+				0, 0, 0, 0,
+				// back
+				0, 0, 0, 0,
+				// left
+				0, 0, 0, 0,
+				// left
+				0, 0, 0, 0,
+				// top
+				// left
+				0, 0, 0, 0,
+				// bottom
+				20, 21, 23, 22,};
+
+			private FloatBuffer mVertext;
+			private FloatBuffer mText;
+
+			private ByteBuffer mIndexFront;
+			private ByteBuffer mIndexBack;
+			private ByteBuffer mIndexLeft;
+
+			private int[] mTextures;
+
+			private ByteBuffer mIndexRight;
+
+			private ByteBuffer mIndexTop;
+
+			private ByteBuffer mIndexBottom;
+
+			private FloatBuffer mColor;
+
+			public TextCure(Context context) {
+				super(context);
+				
+				ByteBuffer bb = ByteBuffer.allocateDirect(VERTEX.length * 4);
+				bb.order(ByteOrder.nativeOrder());
+				mVertext = bb.asFloatBuffer();
+				mVertext.put(VERTEX);
+				mVertext.position(0);
+				bb = ByteBuffer.allocateDirect(VERTEX.length * 4);
+				bb.order(ByteOrder.nativeOrder());
+				mColor = bb.asFloatBuffer();
+				mColor.put(VERTEX);
+				mColor.position(0);
+
+				bb = ByteBuffer.allocateDirect(TEX.length * 4);
+				bb.order(ByteOrder.nativeOrder());				
+				mText = bb.asFloatBuffer();
+				mText.put(TEX);
+				mText.position(0);
+
+				bb = ByteBuffer.allocateDirect(INDEX_FRONT.length * 1);
+				bb.order(ByteOrder.nativeOrder());		
+				bb.put(INDEX_FRONT);
+				mIndexFront = bb;
+				mIndexFront.position(0);
+				
+				bb = ByteBuffer.allocateDirect(INDEX_BACK.length * 1);
+				bb.order(ByteOrder.nativeOrder());				
+				bb.put(INDEX_BACK);
+				mIndexBack = bb;
+				mIndexBack.position(0);
+
+				bb = ByteBuffer.allocateDirect(INDEX_LEFT.length * 1);
+				bb.order(ByteOrder.nativeOrder());				
+				bb.put(INDEX_LEFT);
+				mIndexLeft = bb;
+				mIndexLeft.position(0);
+				
+				bb = ByteBuffer.allocateDirect(INDEX_RIGHT.length * 1);
+				bb.order(ByteOrder.nativeOrder());				
+				bb.put(INDEX_RIGHT);
+				mIndexRight = bb;
+				mIndexRight.position(0);
+				
+				bb = ByteBuffer.allocateDirect(INDEX_TOP.length * 1);
+				bb.order(ByteOrder.nativeOrder());				
+				bb.put(INDEX_TOP);
+				mIndexTop = bb;
+				mIndexTop.position(0);
+				
+				bb = ByteBuffer.allocateDirect(INDEX_BOTTOM.length * 1);
+				bb.order(ByteOrder.nativeOrder());				
+				bb.put(INDEX_BOTTOM);
+				mIndexBottom = bb;
+				mIndexBottom.position(0);
+			}
+
+			@Override
+			public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+				// TODO Auto-generated method stub
+				super.onSurfaceCreated(gl, config);
+
+				IntBuffer textures = IntBuffer.allocate(TEXUT_UNIT_COUNT);
+				gl.glGenTextures(TEXUT_UNIT_COUNT, textures);
+				mTextures = textures.array();
+				int textUnit = PLANE_BACK;
+				gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextures[textUnit]);
+				bindTexture(textUnit);
+				gl.glTexParameterx(GL10.GL_TEXTURE_2D,
+						GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_NEAREST);
+				gl.glTexParameterx(GL10.GL_TEXTURE_2D,
+						GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST);
+				textUnit = PLANE_FRONT;
+				gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextures[textUnit]);
+				bindTexture(textUnit);
+				gl.glTexParameterx(GL10.GL_TEXTURE_2D,
+						GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_NEAREST);
+				gl.glTexParameterx(GL10.GL_TEXTURE_2D,
+						GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST);
+				textUnit = PLANE_LEFT;
+				gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextures[textUnit]);
+				bindTexture(textUnit);
+				gl.glTexParameterx(GL10.GL_TEXTURE_2D,
+						GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_NEAREST);
+				gl.glTexParameterx(GL10.GL_TEXTURE_2D,
+						GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST);
+				textUnit = PLANE_RIGHT;
+				gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextures[textUnit]);
+				bindTexture(textUnit);
+				gl.glTexParameterx(GL10.GL_TEXTURE_2D,
+						GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_NEAREST);
+				gl.glTexParameterx(GL10.GL_TEXTURE_2D,
+						GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST);
+				textUnit = PLANE_TOP;
+				gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextures[textUnit]);
+				bindTexture(textUnit);
+				gl.glTexParameterx(GL10.GL_TEXTURE_2D,
+						GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_NEAREST);
+				gl.glTexParameterx(GL10.GL_TEXTURE_2D,
+						GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST);
+				textUnit = PLANE_BOTTOM;
+				gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextures[textUnit]);
+				bindTexture(textUnit);
+			}
+
+			@Override
+			public void onDrawFrame(GL10 gl) {
+				// super.onDrawFrame(gl);
+				gl.glShadeModel(GL10.GL_FLAT);
+				gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
+				gl.glVertexPointer(COORD_PER_VERTEX, GL10.GL_FLOAT, 0, mVertext);
+
+//				gl.glEnable(GL10.GL_CULL_FACE);
+//				gl.glCullFace(GL10.GL_BACK);
+
+				gl.glEnableClientState(GL10.GL_COLOR_ARRAY);
+				gl.glColorPointer(4, GL10.GL_FLOAT, 0, mColor);
+
+				gl.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
+				gl.glTexCoordPointer(2, GL10.GL_FLOAT, 0, mText);
+
+				gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextures[PLANE_FRONT]);
+				gl.glDrawElements(GL10.GL_TRIANGLE_STRIP, 4,
+						GL10.GL_UNSIGNED_BYTE, mIndexFront);
+				gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextures[PLANE_BACK]);
+				gl.glDrawElements(GL10.GL_TRIANGLE_STRIP, 8,
+						GL10.GL_UNSIGNED_BYTE, mIndexBack);
+				gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextures[PLANE_LEFT]);
+				gl.glDrawElements(GL10.GL_TRIANGLE_STRIP, 12,
+						GL10.GL_UNSIGNED_BYTE, mIndexLeft);
+				gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextures[PLANE_LEFT]);
+				gl.glDrawElements(GL10.GL_TRIANGLE_STRIP, 16,
+						GL10.GL_UNSIGNED_BYTE, mIndexRight);
+				gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextures[PLANE_LEFT]);
+				gl.glDrawElements(GL10.GL_TRIANGLE_STRIP, 20,
+						GL10.GL_UNSIGNED_BYTE, mIndexTop);
+				gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextures[PLANE_LEFT]);
+				gl.glDrawElements(GL10.GL_TRIANGLE_STRIP, 24,
+						GL10.GL_UNSIGNED_BYTE, mIndexBottom);
 			}
 		}
 	}
