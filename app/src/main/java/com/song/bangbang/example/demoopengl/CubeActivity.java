@@ -19,8 +19,10 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Paint.Align;
 import android.graphics.Typeface;
 import android.opengl.GLSurfaceView;
+import android.opengl.GLU;
 import android.opengl.GLUtils;
 import android.os.Bundle;
 import android.text.TextPaint;
@@ -171,7 +173,7 @@ public class CubeActivity extends Activity {
 				gl.glMatrixMode(GL10.GL_PROJECTION); // set matrix to projection
 														// mode
 				gl.glLoadIdentity(); // reset the matrix to its default state
-				// gl.glFrustumf(-ratio, ratio, -1, 1, 3, 7); // apply the
+//				 gl.glFrustumf(-ratio, ratio, -1, 1, 3, 7); // apply the
 				// projection matrix
 
 				mModel.onSurfaceChanged(gl, width, height);
@@ -187,7 +189,7 @@ public class CubeActivity extends Activity {
 
 				// XXX bysong why we need this ???
 				// When using GL_MODELVIEW, you must set the view point
-				// GLU.gluLookAt(gl, 0, 0, -3, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
+//				 GLU.gluLookAt(gl, 0, 0, 5, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
 
 				gl.glRotatef(mAngleX, 0, 1, 0);
 				gl.glRotatef(mAngleY, 1, 0, 0);
@@ -205,8 +207,8 @@ public class CubeActivity extends Activity {
 			public static final int PLANE_BOTTOM = 5;
 			public static final int PLANE_COUNT = 6;
 
-			public static final float ZERO = 0.2f;
-			public static final float ONE = 0.8f;
+			public static final float ZERO = 0.0f;
+			public static final float ONE = 0.99f;
 			public static final float W = 1f;
 			public static final int BYTE_PER_FLOAT = 4;
 			public static final int BYTE_PER_SHORT = 2;
@@ -390,36 +392,60 @@ public class CubeActivity extends Activity {
 						// Ignore.
 					}
 				}
-				// bitmap =
-				// ((BitmapDrawable)mContext.getResources().getDrawable(R.drawable.ic_launcher)).getBitmap();
-				// Bitmap b = getBitmap(which);
-				// bitmap = b;
+				Bitmap b = getBitmap(which);
+				bitmap = b;
 
 				GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, bitmap, 0);
 				bitmap.recycle();
 			}
 
-			Bitmap getBitmap(int which) {
+			Bitmap getBitmap(int whichPlane) {
 				Config config = Config.ARGB_8888;
-				Bitmap b = Bitmap.createBitmap(128, 128, config);
+				int w = 128;
+				int h = 128;
+				Bitmap b = Bitmap.createBitmap(w, h, config);
 				// b.eraseColor(0);
 				Canvas c = new Canvas(b);
 				Paint p = new TextPaint();
 				p.setColor(Color.RED);
-				p.setTextSize(30);
+				p.setTextSize(20);
 				p.setAntiAlias(true);
 				String familyName = "Times New Roman";
 				Typeface font = Typeface.create(familyName, Typeface.NORMAL);
 
-				p.setColor(Color.WHITE);
-
+				p.setColor(Color.BLACK);
 				p.setTypeface(font);
+				p.setTextAlign(Align.CENTER);
 				c.drawColor(Color.TRANSPARENT);
-				// c.drawColor(Color.WHITE);
+				 c.drawColor(Color.WHITE);
 
-				c.drawText(which + " ", 0, 0, p);
+				c.drawText(toPlaneStr(whichPlane), w/2, h/2, p);
 
 				return b;
+			}
+			
+			String toPlaneStr(int whichPlane){
+				String str = "";
+				if (PLANE_BACK == whichPlane) {
+					str = "BACK";
+				}
+				if (PLANE_FRONT == whichPlane) {
+					str = "FRONT";
+				}
+				if (PLANE_LEFT == whichPlane) {
+					str = "LEFT";
+				}
+				if (PLANE_RIGHT == whichPlane) {
+					str = "RIGHT";
+				}
+				if (PLANE_BOTTOM == whichPlane) {
+					str = "BOTTOM";
+				}
+				if (PLANE_TOP == whichPlane) {
+					str = "TOP";
+				}
+				
+				return str;
 			}
 		}
 
@@ -702,15 +728,16 @@ public class CubeActivity extends Activity {
 				gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextures[PLANE_LEFT]);
 				gl.glDrawElements(GL10.GL_TRIANGLE_STRIP, 12,
 						GL10.GL_UNSIGNED_BYTE, mIndexLeft);
-				gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextures[PLANE_LEFT]);
+				gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextures[PLANE_RIGHT]);
 				gl.glDrawElements(GL10.GL_TRIANGLE_STRIP, 16,
 						GL10.GL_UNSIGNED_BYTE, mIndexRight);
-				gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextures[PLANE_LEFT]);
+				gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextures[PLANE_TOP]);
 				gl.glDrawElements(GL10.GL_TRIANGLE_STRIP, 20,
 						GL10.GL_UNSIGNED_BYTE, mIndexTop);
-				gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextures[PLANE_LEFT]);
+				gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextures[PLANE_BOTTOM]);
 				gl.glDrawElements(GL10.GL_TRIANGLE_STRIP, 24,
 						GL10.GL_UNSIGNED_BYTE, mIndexBottom);
+				
 			}
 		}
 	}
