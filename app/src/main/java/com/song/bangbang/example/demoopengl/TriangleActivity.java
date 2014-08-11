@@ -1,6 +1,7 @@
 package com.song.bangbang.example.demoopengl;
 
 import android.app.Activity;
+import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
 import android.os.Bundle;
@@ -11,7 +12,6 @@ import android.view.ViewGroup;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -26,7 +26,7 @@ public class TriangleActivity extends Activity {
 
         GLSurfaceView glSurfaceView = new GLSurfaceView(this);
         glSurfaceView.setDebugFlags(GLSurfaceView.DEBUG_CHECK_GL_ERROR|GLSurfaceView.DEBUG_LOG_GL_CALLS);
-        glSurfaceView.setRenderer(new MyRender());
+        glSurfaceView.setRenderer(new MyRender(this));
         ((ViewGroup) findViewById(R.id.container)).addView(glSurfaceView);
 
     }
@@ -50,14 +50,15 @@ public class TriangleActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
-    public static class MyRender implements GLSurfaceView.Renderer {
+    public class MyRender implements GLSurfaceView.Renderer {
 
         private Triangle mTriangle;
 
-        public MyRender() {
+        public MyRender(Context context) {
 
             mTriangle = new Triangle();
             mTriangle = new SmoothTriangle(true);
+            mTriangle = new TextureTriangle(context, true);
         }
 
         @Override
@@ -180,6 +181,49 @@ public class TriangleActivity extends Activity {
 
 
             gl.glDisableClientState(GL10.GL_COLOR_ARRAY);
+        }
+    }
+
+    public static class TextureTriangle extends SmoothTriangle {
+
+        private final FloatBuffer mTex;
+        private final Context mContext;
+
+        public TextureTriangle(Context context, boolean smooth) {
+            super(smooth);
+            mContext = context;
+
+            ByteBuffer byteBuffer = ByteBuffer.allocateDirect(TRIANGLE_COORDINATES.length * BYTE_PER_FLOAT);
+            byteBuffer.order(ByteOrder.nativeOrder());
+            mTex = byteBuffer.asFloatBuffer();
+//            mTex.put(TRIANGLE_COORDINATES);
+            for (int i = 0; i < 3 ; i++) {
+                for (int j = 0 ; j < COORDS_PER_VERTEX; j++){
+                    mTex.put(TRIANGLE_COORDINATES[i * 3 + j] * 2);
+                }
+            }
+            mTex.position(0);
+
+        }
+
+        @Override
+        protected void onPreDraw(GL10 gl) {
+            super.onPreDraw(gl);
+
+            gl.glEnable(GL10.GL_TEXTURE_2D);
+            gl.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
+            gl.glTexCoordPointer(COORDS_PER_VERTEX, GL10.GL_FLOAT, 0, mTex);
+            gl.glTexParameterf(GL10.GL_TEXTURE_2D,
+                    GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST);
+            gl.glTexParameterf(GL10.GL_TEXTURE_2D,
+                    GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_LINEAR);
+
+            CubeActivity.MyGlSurfaceView.Cube.bindTexture(mContext, CubeActivity.MyGlSurfaceView.Cube.PLANE_FRONT);
+        }
+
+        @Override
+        protected void onPostDraw(GL10 gl) {
+            super.onPostDraw(gl);
         }
     }
 

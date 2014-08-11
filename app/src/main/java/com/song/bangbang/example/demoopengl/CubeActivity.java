@@ -1,16 +1,5 @@
 package com.song.bangbang.example.demoopengl;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-import java.nio.ShortBuffer;
-
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.opengles.GL10;
-
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -22,7 +11,6 @@ import android.graphics.Paint;
 import android.graphics.Paint.Align;
 import android.graphics.Typeface;
 import android.opengl.GLSurfaceView;
-import android.opengl.GLU;
 import android.opengl.GLUtils;
 import android.os.Bundle;
 import android.text.TextPaint;
@@ -34,6 +22,17 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.song.bangbang.example.demoopengl.CubeActivity.MyGlSurfaceView.MyRender;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
+
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
 
 public class CubeActivity extends Activity {
 
@@ -199,8 +198,8 @@ public class CubeActivity extends Activity {
 		}
 
 		public static class Cube {
-			public static final int PLANE_BACK = 0;
-			public static final int PLANE_FRONT = 1;
+            public static final int PLANE_FRONT = 0;
+			public static final int PLANE_BACK = 1;
 			public static final int PLANE_LEFT = 2;
 			public static final int PLANE_RIGHT = 3;
 			public static final int PLANE_TOP = 4;
@@ -264,6 +263,42 @@ public class CubeActivity extends Activity {
 			private ShortBuffer mIbb;
 
 			private Context mContext;
+
+            public static void bindTexture(Context context, int which) {
+                int res = R.raw.robot;
+                if (PLANE_BACK == which) {
+                    res = R.raw.robot_back;
+                }
+                if (PLANE_FRONT == which) {
+                    res = R.raw.robot_front;
+                }
+                if (PLANE_LEFT == which) {
+                    res = R.raw.robot_left;
+                }
+                if (PLANE_RIGHT == which) {
+                    res = R.raw.robot_right;
+                }
+                if (PLANE_BOTTOM == which) {
+                    res = R.raw.robot_bottom;
+                }
+                if (PLANE_TOP == which) {
+                    res = R.raw.robot_top;
+                }
+                InputStream is = context.getResources().openRawResource(res);
+                Bitmap bitmap;
+                try {
+                    bitmap = BitmapFactory.decodeStream(is);
+                } finally {
+                    try {
+                        is.close();
+                    } catch (IOException e) {
+                        // Ignore.
+                    }
+                }
+
+                GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, bitmap, 0);
+                bitmap.recycle();
+            }
 
 			public Cube(Context context) {
 				mContext = context;
@@ -361,43 +396,9 @@ public class CubeActivity extends Activity {
 				}
 			}
 
-			public void bindTexture(int which) {
-				int res = R.raw.robot;
-				if (PLANE_BACK == which) {
-					res = R.raw.robot_back;
-				}
-				if (PLANE_FRONT == which) {
-					res = R.raw.robot_front;
-				}
-				if (PLANE_LEFT == which) {
-					res = R.raw.robot_left;
-				}
-				if (PLANE_RIGHT == which) {
-					res = R.raw.robot_right;
-				}
-				if (PLANE_BOTTOM == which) {
-					res = R.raw.robot_bottom;
-				}
-				if (PLANE_TOP == which) {
-					res = R.raw.robot_top;
-				}
-				InputStream is = mContext.getResources().openRawResource(res);
-				Bitmap bitmap;
-				try {
-					bitmap = BitmapFactory.decodeStream(is);
-				} finally {
-					try {
-						is.close();
-					} catch (IOException e) {
-						// Ignore.
-					}
-				}
-				Bitmap b = getBitmap(which);
-				bitmap = b;
-
-				GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, bitmap, 0);
-				bitmap.recycle();
-			}
+            public void bindTexture(int which) {
+                bindTexture(mContext, which);
+            }
 
 			Bitmap getBitmap(int whichPlane) {
 				Config config = Config.ARGB_8888;
@@ -487,21 +488,21 @@ public class CubeActivity extends Activity {
 
 			public static final float[] TEX = new float[] {
 					// front
-					ZERO, ONE, ZERO, ZERO, ONE, ZERO, ONE, ONE,
-					// back
-					ZERO, ONE, ZERO, ZERO, ONE, ZERO, ONE, ONE,
+                    ONE, ZERO,ONE, ONE, ZERO, ONE, ZERO, ZERO,
+                    // back
+                    ZERO, ZERO, ZERO, ONE, ONE, ONE, ONE, ZERO,
 					// left
-					ZERO, ONE, ZERO, ZERO, ONE, ZERO, ONE, ONE,
+                    ONE, ZERO,ONE, ONE, ZERO, ONE, ZERO, ZERO,
 					// right
-					ZERO, ONE, ZERO, ZERO, ONE, ZERO, ONE, ONE,
+                    ZERO, ZERO, ZERO, ONE, ONE, ONE, ONE, ZERO,
 					// top
-					ZERO, ONE, ZERO, ZERO, ONE, ZERO, ONE, ONE,
+                    ONE, ZERO,ONE, ONE, ZERO, ONE, ZERO, ZERO,
 					// bottom
-					ZERO, ONE, ZERO, ZERO, ONE, ZERO, ONE, ONE, };
+                    ZERO, ZERO, ZERO, ONE, ONE, ONE, ONE, ZERO, };
 			public static final byte[] INDEX_FRONT = new byte[] {
 					// front
-					0, 1, 3, 2,
-					// back
+					0, 3, 2, 1,
+                    // back
 					0, 0, 0, 0,
 					// left
 					0, 0, 0, 0,
@@ -532,8 +533,8 @@ public class CubeActivity extends Activity {
 					// back
 					0, 0, 0, 0,
 					// left
-					8, 9, 11, 10, 
-					// left
+					8, 11, 10,9,
+                    // left
 					0, 0, 0, 0,
 					// top
 					0, 0, 0, 0,
@@ -563,8 +564,8 @@ public class CubeActivity extends Activity {
 				// left
 				0, 0, 0, 0,
 				// top
-				16, 17, 19, 18,
-				// bottom
+				16, 19, 18,17,
+                    // bottom
 				0, 0, 0, 0,};
 			public static final byte[] INDEX_BOTTOM = new byte[] {
 				// front
@@ -573,10 +574,9 @@ public class CubeActivity extends Activity {
 				0, 0, 0, 0,
 				// left
 				0, 0, 0, 0,
-				// left
+				// right
 				0, 0, 0, 0,
 				// top
-				// left
 				0, 0, 0, 0,
 				// bottom
 				20, 21, 23, 22,};
@@ -606,6 +606,7 @@ public class CubeActivity extends Activity {
 				mVertext = bb.asFloatBuffer();
 				mVertext.put(VERTEX);
 				mVertext.position(0);
+
 				bb = ByteBuffer.allocateDirect(VERTEX.length * 4);
 				bb.order(ByteOrder.nativeOrder());
 				mColor = bb.asFloatBuffer();
@@ -663,20 +664,23 @@ public class CubeActivity extends Activity {
 				IntBuffer textures = IntBuffer.allocate(TEXUT_UNIT_COUNT);
 				gl.glGenTextures(TEXUT_UNIT_COUNT, textures);
 				mTextures = textures.array();
-				int textUnit = PLANE_BACK;
+
+				int textUnit = PLANE_FRONT;
+                gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextures[textUnit]);
+                bindTexture(textUnit);
+                gl.glTexParameterx(GL10.GL_TEXTURE_2D,
+                        GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_NEAREST);
+                gl.glTexParameterx(GL10.GL_TEXTURE_2D,
+                        GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST);
+
+                textUnit = PLANE_BACK;
 				gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextures[textUnit]);
 				bindTexture(textUnit);
 				gl.glTexParameterx(GL10.GL_TEXTURE_2D,
 						GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_NEAREST);
 				gl.glTexParameterx(GL10.GL_TEXTURE_2D,
 						GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST);
-				textUnit = PLANE_FRONT;
-				gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextures[textUnit]);
-				bindTexture(textUnit);
-				gl.glTexParameterx(GL10.GL_TEXTURE_2D,
-						GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_NEAREST);
-				gl.glTexParameterx(GL10.GL_TEXTURE_2D,
-						GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST);
+
 				textUnit = PLANE_LEFT;
 				gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextures[textUnit]);
 				bindTexture(textUnit);
@@ -684,6 +688,7 @@ public class CubeActivity extends Activity {
 						GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_NEAREST);
 				gl.glTexParameterx(GL10.GL_TEXTURE_2D,
 						GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST);
+
 				textUnit = PLANE_RIGHT;
 				gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextures[textUnit]);
 				bindTexture(textUnit);
@@ -691,6 +696,7 @@ public class CubeActivity extends Activity {
 						GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_NEAREST);
 				gl.glTexParameterx(GL10.GL_TEXTURE_2D,
 						GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST);
+
 				textUnit = PLANE_TOP;
 				gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextures[textUnit]);
 				bindTexture(textUnit);
@@ -698,6 +704,7 @@ public class CubeActivity extends Activity {
 						GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_NEAREST);
 				gl.glTexParameterx(GL10.GL_TEXTURE_2D,
 						GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST);
+
 				textUnit = PLANE_BOTTOM;
 				gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextures[textUnit]);
 				bindTexture(textUnit);
@@ -706,7 +713,8 @@ public class CubeActivity extends Activity {
 			@Override
 			public void onDrawFrame(GL10 gl) {
 				// super.onDrawFrame(gl);
-				gl.glShadeModel(GL10.GL_FLAT);
+				gl.glShadeModel(GL10.GL_SMOOTH);
+
 				gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
 				gl.glVertexPointer(COORD_PER_VERTEX, GL10.GL_FLOAT, 0, mVertext);
 
@@ -722,23 +730,30 @@ public class CubeActivity extends Activity {
 				gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextures[PLANE_FRONT]);
 				gl.glDrawElements(GL10.GL_TRIANGLE_STRIP, 4,
 						GL10.GL_UNSIGNED_BYTE, mIndexFront);
+
 				gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextures[PLANE_BACK]);
 				gl.glDrawElements(GL10.GL_TRIANGLE_STRIP, 8,
 						GL10.GL_UNSIGNED_BYTE, mIndexBack);
+
 				gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextures[PLANE_LEFT]);
 				gl.glDrawElements(GL10.GL_TRIANGLE_STRIP, 12,
 						GL10.GL_UNSIGNED_BYTE, mIndexLeft);
+
 				gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextures[PLANE_RIGHT]);
 				gl.glDrawElements(GL10.GL_TRIANGLE_STRIP, 16,
 						GL10.GL_UNSIGNED_BYTE, mIndexRight);
+
 				gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextures[PLANE_TOP]);
 				gl.glDrawElements(GL10.GL_TRIANGLE_STRIP, 20,
 						GL10.GL_UNSIGNED_BYTE, mIndexTop);
-				gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextures[PLANE_BOTTOM]);
-				gl.glDrawElements(GL10.GL_TRIANGLE_STRIP, 24,
-						GL10.GL_UNSIGNED_BYTE, mIndexBottom);
+
+//				gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextures[PLANE_BOTTOM]);
+//				gl.glDrawElements(GL10.GL_TRIANGLE_STRIP, 24,
+//						GL10.GL_UNSIGNED_BYTE, mIndexBottom);
 				
 			}
 		}
 	}
+
+
 }
